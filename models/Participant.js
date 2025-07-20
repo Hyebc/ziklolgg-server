@@ -13,4 +13,4 @@ const participantSchema = new mongoose.Schema({
   matchDate: String // YYYY-MM-DD or YYYYMMDD
 });
 
-export default mongoose.model('Participant', participantSchema);
+export default mongoose.model('Participant', participantSchema, 'participants');
