@@ -31,7 +31,10 @@ const clientBuildPath = path.join(__dirname, '../client/build');
 app.use(express.static(clientBuildPath));
 
 // ✅ 3. 마지막 catch-all fallback
-app.get('*', (req, res) => {
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next(); // → API 요청은 패스하고 다음 미들웨어로
+  }
   res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
 
