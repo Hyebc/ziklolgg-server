@@ -22,16 +22,17 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// ✅ API 라우터 등록
+// ✅ 1. API 라우팅 먼저 등록
 app.use('/api/match', matchRoutes);
 app.use('/api/ranking', rankingRoutes);
 
-// ✅ 정적 파일 서비스 (클라이언트가 빌드된 경우)
+// ✅ 2. 그다음 클라이언트 build 정적 파일 제공
 const clientBuildPath = path.join(__dirname, '../client/build');
-app.use(express.static(path.join(__dirname, '../client/build')));
+app.use(express.static(clientBuildPath));
 
+// ✅ 3. 마지막 catch-all fallback
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
 
 // ✅ MongoDB 연결
