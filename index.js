@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import matchRoutes from './routes/matchRoutes.js';
+import rankingRoutes from './routes/rankingRoutes.js';
 
 import { fileURLToPath } from 'url';
 import path from 'path';
@@ -23,6 +24,7 @@ app.use(express.json());
 
 // ✅ API 라우터 등록
 app.use('/api/match', matchRoutes);
+app.use('/api/ranking', rankingRoutes);
 
 // ✅ 정적 파일 서비스 (클라이언트가 빌드된 경우)
 const clientBuildPath = path.join(__dirname, '../client/build');
