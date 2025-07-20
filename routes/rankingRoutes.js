@@ -1,3 +1,7 @@
+let cachedChampions = null;
+let lastCacheTime = 0;
+const CACHE_DURATION = 1000 * 60 * 5;
+
 import express from 'express';
 import Participant from '../models/Participant.js'; // DB 모델
 
@@ -5,11 +9,22 @@ const router = express.Router();
 
 // [1] 챔피언 목록 (필터용)
 router.get('/champions', async (req, res) => {
+  const now = Date.now();
+
+  if (cachedChampions && now - lastCacheTime < CACHE_DURATION) {
+    return res.json(cachedChampions);
+  }
+
   try {
     const champions = await Participant.distinct('champion');
-    res.json(champions.sort());
+    const sorted = champions.sort();
+
+    cachedChampions = sorted;
+    lastCacheTime = now;
+
+    res.json(sorted);
   } catch (err) {
-    console.error(err);
+    console.error('❌ 챔피언 목록 조회 실패:', err);
     res.status(500).send('챔피언 목록 조회 실패');
   }
 });
