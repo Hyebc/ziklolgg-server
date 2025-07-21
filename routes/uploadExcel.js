@@ -91,7 +91,9 @@ router.post('/upload-excel', upload.single('file'), async (req, res) => {
         rating: calculateRating(k, a, d),
       });
     }
-
+router.get('/upload-excel', (req, res) => {
+  res.send('✅ upload-excel 라우터 작동 중');
+});
     console.log(`🔥 총 participants 수: ${participants.length}`);
     if (participants.length === 0) {
       return res.status(400).json({ error: '전적 데이터가 없습니다.' });
