@@ -18,7 +18,7 @@ const calculateRating = (k, a, d) => {
   return ((kills + assists) / deaths).toFixed(2);
 };
 
-// 중복되지 않는 _id 생성 함수
+// 고유 ID 생성 함수 (_id 중복 방지)
 const generateUniqueId = async (baseId) => {
   let suffix = 0;
   let candidateId = baseId;
@@ -33,6 +33,10 @@ const generateUniqueId = async (baseId) => {
 // 엑셀 업로드 전용 라우트
 router.post('/upload-excel', upload.single('file'), async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: '파일이 업로드되지 않았습니다.' });
+    }
+
     const workbook = xlsx.readFile(req.file.path);
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = xlsx.utils.sheet_to_json(sheet, { header: 1 });
@@ -62,7 +66,15 @@ router.post('/upload-excel', upload.single('file'), async (req, res) => {
       const a = Number(rowObj['A']) || 0;
 
       const baseId = `${nickname}_${rowObj['챔피언']}_${rowObj['대회명'].replace(/[-:/ ]/g, '')}_${rowObj['분석자'] || '기본'}`;
-      const _id = await generateUniqueId(baseId);
+
+      let _id;
+      try {
+        _id = await generateUniqueId(baseId);
+      } catch (e) {
+        console.error(`❌ _id 생성 실패: ${baseId}`);
+        continue; // 해당 항목은 무시
+      }
+
       console.log(`✅ 생성된 ID: ${_id}`);
 
       participants.push({
@@ -75,7 +87,7 @@ router.post('/upload-excel', upload.single('file'), async (req, res) => {
         win: rowObj['결과'] === '승',
         perfect: false,
         matchDate: rowObj['대회명'],
-        matchTag: rowObj['대회명'] || '',
+        matchTag: rowObj['분석자'] || '',
         rating: calculateRating(k, a, d),
       });
     }
@@ -91,7 +103,9 @@ router.post('/upload-excel', upload.single('file'), async (req, res) => {
     res.status(200).json({ message: `✅ ${participants.length}개 전적 업로드 성공` });
   } catch (error) {
     console.error('❌ 서버 오류 발생:', error);
-    res.status(500).json({ error: '업로드 실패', detail: error.message });
+    if (!res.headersSent) {
+      res.status(500).json({ error: '업로드 실패', detail: error.message });
+    }
   }
 });
 
