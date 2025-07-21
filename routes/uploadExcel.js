@@ -24,6 +24,7 @@ const generateUniqueId = async (baseId) => {
   let candidateId = baseId;
   while (await Participant.exists({ _id: candidateId })) {
     suffix += 1;
+    if (suffix > 1000) throw new Error(`_id 중복이 너무 많습니다: ${baseId}`);
     candidateId = `${baseId}_${suffix}`;
   }
   return candidateId;
@@ -62,6 +63,7 @@ router.post('/upload-excel', upload.single('file'), async (req, res) => {
 
       const baseId = `${nickname}_${rowObj['챔피언']}_${rowObj['대회명'].replace(/[-:/ ]/g, '')}_${rowObj['분석자'] || '기본'}`;
       const _id = await generateUniqueId(baseId);
+      console.log(`✅ 생성된 ID: ${_id}`);
 
       participants.push({
         _id,
@@ -78,10 +80,17 @@ router.post('/upload-excel', upload.single('file'), async (req, res) => {
       });
     }
 
+    console.log(`🔥 총 participants 수: ${participants.length}`);
+    if (participants.length === 0) {
+      return res.status(400).json({ error: '전적 데이터가 없습니다.' });
+    }
+
     await Participant.insertMany(participants);
+    console.log('✅ insertMany 완료');
 
     res.status(200).json({ message: `✅ ${participants.length}개 전적 업로드 성공` });
   } catch (error) {
+    console.error('❌ 서버 오류 발생:', error);
     res.status(500).json({ error: '업로드 실패', detail: error.message });
   }
 });
