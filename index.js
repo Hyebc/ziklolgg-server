@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import matchRoutes from './routes/matchRoutes.js';
+import uploadExcelRoute from './routes/uploadExcel.js';
 import rankingRoutes from './routes/rankingRoutes.js';
 
 import { fileURLToPath } from 'url';
@@ -25,6 +26,8 @@ app.use(express.json());
 // ✅ 1. API 라우팅 먼저 등록
 app.use('/api/match', matchRoutes);
 app.use('/api/ranking', rankingRoutes);
+app.use('/api/matches', uploadExcelRoute);
+
 
 // ✅ 2. 그다음 클라이언트 build 정적 파일 제공
 const clientBuildPath = path.join(__dirname, '../client/build');
